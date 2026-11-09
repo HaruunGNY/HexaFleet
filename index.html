@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>HexaFleet</title>
+  <meta name="description" content="HexaFleet: sefer, yakıt, masraf, alacak ve belge takibi">
+  <meta name="author" content="Hexaforge">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="HexaFleet">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap">
+  <link rel="stylesheet" href="styles.css?v=4">
+</head>
+<body>
+  <header class="ust">
+    <button id="geri" class="ikon-btn" data-act="sayfa" data-s="daha" aria-label="Geri" hidden>
+      <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <img class="marka" src="icons/amblem.png" alt="Hexaforge" width="34" height="34">
+    <h1 id="baslik">HexaFleet</h1>
+    <button id="senkronBtn" class="durum" data-act="senkron" type="button"></button>
+  </header>
+
+  <main id="icerik"></main>
+
+  <button id="fab" class="fab" data-act="fab" type="button" aria-label="Yeni kayıt">
+    <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+
+  <nav class="alt" id="altNav">
+    <button data-act="sayfa" data-s="ozet" type="button">
+      <svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span>Özet</span>
+    </button>
+    <button data-act="sayfa" data-s="seferler" type="button">
+      <svg viewBox="0 0 24 24"><path d="M2 6h12v10H2z"/><path d="M14 9h4l3.5 3.5V16H14z"/><circle cx="6" cy="18" r="2"/><circle cx="17.5" cy="18" r="2"/></svg><span>Seferler</span>
+    </button>
+    <button data-act="sayfa" data-s="yakit" type="button">
+      <svg viewBox="0 0 24 24"><path d="M4 21V5a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v16"/><path d="M3 21h13"/><path d="M15 10h2a2 2 0 0 1 2 2v4.5a1.5 1.5 0 0 0 3 0V9l-3-3"/><path d="M7 7h5v4H7z"/></svg><span>Yakıt</span>
+    </button>
+    <button data-act="sayfa" data-s="masraflar" type="button">
+      <svg viewBox="0 0 24 24"><path d="M5 2h14v20l-3-2-2 2-2-2-2 2-2-2-3 2z"/><path d="M9 7h6M9 11h6M9 15h4"/></svg><span>Masraf</span>
+    </button>
+    <button data-act="sayfa" data-s="daha" type="button">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Daha</span><i class="nav-rozet" id="dahaRozet" hidden></i>
+    </button>
+  </nav>
+
+  <div id="modal" class="modal" hidden>
+    <div class="perde" data-act="kapat"></div>
+    <div class="sheet" id="sheet" role="dialog" aria-modal="true"></div>
+  </div>
+
+  <div id="listeler"></div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js?v=4"></script>
+</body>
+</html>
