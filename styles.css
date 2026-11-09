@@ -402,3 +402,13 @@ h1, h2, h3, .buyuk, .ay-nav .ay-ad, .istat b, .kutu b, .satir-ust b { font-famil
 .imza { text-align: center; font-size: 12px; color: var(--soluk); margin-top: 6px; }
 .imza a { color: var(--ana); text-decoration: none; font-weight: 600; }
 .imza b { font-family: var(--baslik-font); letter-spacing: .06em; }
+
+/* Sefer satırı tek tık butonları */
+.satir-eylem { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--cizgi); }
+.satir-eylem { flex-wrap: nowrap; }
+.satir-eylem > * { flex: 1 1 0; min-width: 0; text-align: center; }
+.satir-eylem .mini-btn { min-height: 38px; padding: 6px 8px; font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; }
+.satir-eylem .mini-btn.geri { flex: none; }
+.satir-eylem .mini-btn.odeme { background: var(--yesil-acik); border-color: rgba(52, 211, 153, .5); color: var(--yesil); }
+.satir-eylem .rozet { padding: 6px 10px; font-size: 13px; }
+.belge-link { text-decoration: none; font-size: 16px; padding: 2px 4px; }

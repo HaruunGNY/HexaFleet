@@ -397,8 +397,8 @@ const FORMLAR = {
       { k: 'vade', l: 'Vade tarihi', t: 'date', yarim: 1, goster: v => v.faturaKesildi },
       { k: 'tahsilEdildi', l: 'Ödemesi alındı', t: 'check' },
       { k: 'tahsilTarihi', l: 'Tahsil tarihi', t: 'date', goster: v => v.tahsilEdildi, vars: () => bugun() },
-      { k: 'not', l: 'Not', t: 'area' },
-      { k: 'dosya', l: 'Belge (CMR / irsaliye / fatura)', t: 'file' }
+      { k: 'dosya', l: 'Fatura / belge (fotoğraf veya PDF)', t: 'file' },
+      { k: 'not', l: 'Not', t: 'area' }
     ],
     dogrula(v) {
       if (sayi(v.bitisKm) && sayi(v.baslangicKm) && sayi(v.bitisKm) < sayi(v.baslangicKm)) return ['bitisKm', 'Bitiş km, başlangıçtan küçük olamaz'];
@@ -762,7 +762,7 @@ function ayNav() {
 function meta(r, bek) {
   const p = [];
   if (r.ekleyen) p.push('👤 ' + esc(r.ekleyen));
-  if (r.dosyaUrl) p.push('📎');
+  if (r.dosyaUrl) p.push(`<a class="belge-link" href="${esc(r.dosyaUrl)}" target="_blank" rel="noopener" data-act="link" aria-label="Belgeyi aç">📎</a>`);
   if (bek.has(r.id)) p.push('⏳');
   return p.join(' ');
 }
@@ -780,9 +780,22 @@ function seferSatir(s, bek) {
     <div class="satir-ikon mavi">🚛</div>
     <div class="satir-ana">
       <div class="satir-ust"><b>${esc(s.yukleme)} → ${esc(s.bosaltma)}</b><span>${para(seferGelir(s))}</span></div>
-      <div class="satir-alt"><span>${tarihGoster(s.tarih)} · ${esc(s.musteri)}</span><span class="rozet ${d.renk}">${d.etiket}</span></div>
-      <div class="satir-alt"><span>${devam ? '<span class="rozet mavi">Yolda</span> ' : ''}${km ? NUM(km) + ' km · ' : ''}${g.adet ? `Gider ${para(g.tutar)} · Kâr <b class="${seferGelir(s) - g.tutar < 0 ? 'eksi' : 'arti'}">${para(seferGelir(s) - g.tutar)}</b>` : ''}</span><span>${meta(s, bek)}</span></div>
+      <div class="satir-alt"><span>${tarihGoster(s.tarih)} · ${esc(s.musteri)}</span>${d.k === 'tahsil' ? '' : `<span class="rozet ${d.renk}">${d.etiket}</span>`}</div>
+      <div class="satir-alt"><span>${[devam ? '<span class="rozet mavi">Yolda</span>' : '', km ? NUM(km) + ' km' : '', g.adet ? `Gider ${para(g.tutar)}`  : '', g.adet ? `Kâr <b class="${seferGelir(s) - g.tutar < 0 ? 'eksi' : 'arti'}">${para(seferGelir(s) - g.tutar)}</b>` : ''].filter(Boolean).join(' · ')}</span><span>${meta(s, bek)}</span></div>
+      ${seferEylemleri(s)}
     </div></div>`;
+}
+/** Sefer satırındaki tek tıkla durum butonları */
+function seferEylemleri(s) {
+  const id = esc(s.id);
+  if (evet(s.tahsilEdildi)) {
+    return `<div class="satir-eylem">
+      <span class="rozet yesil">✓ Ödeme alındı${s.tahsilTarihi ? ' · ' + tarihGoster(s.tahsilTarihi) : ''}</span>
+      <button type="button" class="mini-btn geri" data-act="odeme" data-id="${id}">Geri al</button></div>`;
+  }
+  return `<div class="satir-eylem">
+    ${evet(s.faturaKesildi) ? '' : `<button type="button" class="mini-btn" data-act="faturaKesildi" data-id="${id}">🧾 Fatura kesildi</button>`}
+    <button type="button" class="mini-btn odeme" data-act="odeme" data-id="${id}">💰 Ödeme alındı</button></div>`;
 }
 function yakitSatir(y, bek, tk) {
   const t = tk.kayit[y.id];
@@ -1163,6 +1176,28 @@ const EYLEM = {
   raporAy: el => { UI.raporAy = el.dataset.a; ciz(); },
   filtre: el => { UI.seferFiltre = el.dataset.f; ciz(); },
   katFiltre: el => { UI.masrafKat = el.dataset.k; ciz(); },
+  link: () => { /* belge linki: tarayıcı kendisi açar, satır formu açılmasın */ },
+  odeme: el => {
+    const s = V.seferler.find(x => x.id === el.dataset.id); if (!s) return;
+    const yeni = { ...s, guncelleme: new Date().toISOString(), guncelleyen: ayar.ad };
+    if (evet(s.tahsilEdildi)) {
+      if (!confirm(`${s.yukleme} → ${s.bosaltma} seferinin ödemesi "alınmadı" olarak geri alınsın mı?`)) return;
+      yeni.tahsilEdildi = false; yeni.tahsilTarihi = '';
+      kayitKaydet('seferler', yeni);
+      toast('Ödeme bekleniyor olarak geri alındı');
+    } else {
+      yeni.tahsilEdildi = true; yeni.tahsilTarihi = bugun();
+      kayitKaydet('seferler', yeni);
+      toast(`💰 ${para(seferFaturaToplam(s))} tahsil edildi`, 'basari');
+    }
+    ciz();
+  },
+  faturaKesildi: el => {
+    const s = V.seferler.find(x => x.id === el.dataset.id); if (!s) return;
+    kayitKaydet('seferler', { ...s, faturaKesildi: true, guncelleme: new Date().toISOString(), guncelleyen: ayar.ad });
+    toast('🧾 Fatura kesildi. Vade ve fatura fotoğrafı için sefere dokun.', 'basari');
+    ciz();
+  },
   alacaklar: () => { UI.seferFiltre = 'acik'; sayfaGit('seferler'); },
   fab: () => {
     const hedef = { seferler: 'seferler', yakit: 'yakit', masraflar: 'masraflar', hatirlatmalar: 'hatirlatmalar' }[UI.sayfa];
