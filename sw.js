@@ -1,8 +1,8 @@
 /* HexaFleet — çevrimdışı çalışma için service worker
  * Strateji: önce internet (güncel sürüm gelsin), internet yoksa/yavaşsa önbellek. */
-const ONBELLEK = 'tir-takip-v7';
+const ONBELLEK = 'tir-takip-v8';
 const FONT_ONBELLEK = 'tir-takip-fontlar';
-const DOSYALAR = ['./', 'index.html', 'app.js?v=7', 'styles.css?v=7', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-180.png', 'icons/amblem.png', 'icons/logo.jpg'];
+const DOSYALAR = ['./', 'index.html', 'app.js?v=8', 'styles.css?v=8', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-180.png', 'icons/amblem.png', 'icons/logo.jpg'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(ONBELLEK).then(c => c.addAll(DOSYALAR)).then(() => self.skipWaiting()));

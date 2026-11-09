@@ -393,6 +393,7 @@ const FORMLAR = {
       { k: 'bitisKm', l: 'Bitiş km', t: 'num', yarim: 1, ipucu: 'Sefer bitince girin' },
       { bolum: 'Fatura & Tahsilat' },
       { k: 'faturaKesildi', l: 'Fatura kesildi', t: 'check' },
+      { k: 'faturaTarihi', l: 'Fatura tarihi', t: 'date', goster: v => v.faturaKesildi, vars: () => bugun() },
       { k: 'faturaNo', l: 'Fatura no', t: 'text', yarim: 1, goster: v => v.faturaKesildi },
       { k: 'vade', l: 'Vade tarihi', t: 'date', yarim: 1, goster: v => v.faturaKesildi },
       { k: 'tahsilEdildi', l: 'Ödemesi alındı', t: 'check' },
@@ -780,7 +781,7 @@ function seferSatir(s, bek) {
     <div class="satir-ikon mavi">🚛</div>
     <div class="satir-ana">
       <div class="satir-ust"><b>${esc(s.yukleme)} → ${esc(s.bosaltma)}</b><span>${para(seferGelir(s))}</span></div>
-      <div class="satir-alt"><span>${tarihGoster(s.tarih)} · ${esc(s.musteri)}</span>${d.k === 'tahsil' ? '' : `<span class="rozet ${d.renk}">${d.etiket}</span>`}</div>
+      <div class="satir-alt"><span>${tarihGoster(s.tarih)} · ${esc(s.musteri)}</span>${s.vade && d.k !== 'tahsil' ? `<span class="rozet ${d.renk}">${d.etiket}</span>` : ''}</div>
       <div class="satir-alt"><span>${[devam ? '<span class="rozet mavi">Yolda</span>' : '', km ? NUM(km) + ' km' : '', g.adet ? `Gider ${para(g.tutar)}`  : '', g.adet ? `Kâr <b class="${seferGelir(s) - g.tutar < 0 ? 'eksi' : 'arti'}">${para(seferGelir(s) - g.tutar)}</b>` : ''].filter(Boolean).join(' · ')}</span><span>${meta(s, bek)}</span></div>
       ${seferEylemleri(s)}
     </div></div>`;
@@ -788,14 +789,12 @@ function seferSatir(s, bek) {
 /** Sefer satırındaki tek tıkla durum butonları */
 function seferEylemleri(s) {
   const id = esc(s.id);
-  if (evet(s.tahsilEdildi)) {
-    return `<div class="satir-eylem">
-      <span class="rozet yesil">✓ Ödeme alındı${s.tahsilTarihi ? ' · ' + tarihGoster(s.tahsilTarihi) : ''}</span>
-      <button type="button" class="mini-btn geri" data-act="odeme" data-id="${id}">Geri al</button></div>`;
-  }
+  const kutu = (tamam, act, ikon, etiket, tarih) => tamam
+    ? `<button type="button" class="durum-btn tamam" data-act="${act}" data-id="${id}"><b>✓ ${etiket}</b><small>${tarih ? tarihGoster(tarih, true) : 'Tarih yok'}</small></button>`
+    : `<button type="button" class="durum-btn" data-act="${act}" data-id="${id}"><b>${ikon} ${etiket}</b><small>İşaretlemek için dokun</small></button>`;
   return `<div class="satir-eylem">
-    ${evet(s.faturaKesildi) ? '' : `<button type="button" class="mini-btn" data-act="faturaKesildi" data-id="${id}">🧾 Fatura kesildi</button>`}
-    <button type="button" class="mini-btn odeme" data-act="odeme" data-id="${id}">💰 Ödeme alındı</button></div>`;
+    ${kutu(evet(s.faturaKesildi), 'faturaKesildi', '🧾', 'Fatura kesildi', s.faturaTarihi)}
+    ${kutu(evet(s.tahsilEdildi), 'odeme', '💰', 'Ödeme alındı', s.tahsilTarihi)}</div>`;
 }
 function yakitSatir(y, bek, tk) {
   const t = tk.kayit[y.id];
@@ -1148,7 +1147,7 @@ function dokum(filtre) {
   const s = n => n == null || n === '' ? '' : (Math.round(n * 100) / 100).toFixed(2).replace('.', ',');
   const satir = [['Tür', 'Tarih', 'Kategori', 'Açıklama', 'Tutar (KDV dahil)', 'KDV %', 'KDV', 'KDV hariç', 'Ödeme / Durum', 'Km', 'Litre', 'Ekleyen', 'Belge']];
   const kayitlar = [];
-  V.seferler.filter(r => filtre(r.tarih)).forEach(r => kayitlar.push([r.tarih, ['Gelir (Sefer)', r.tarih, 'Navlun', `${r.yukleme} → ${r.bosaltma} · ${r.musteri}${r.faturaNo ? ' · Fatura ' + r.faturaNo : ''}`,
+  V.seferler.filter(r => filtre(r.tarih)).forEach(r => kayitlar.push([r.tarih, ['Gelir (Sefer)', r.tarih, 'Navlun', `${r.yukleme} → ${r.bosaltma} · ${r.musteri}${evet(r.faturaKesildi) ? ' · Fatura' + (r.faturaNo ? ' ' + r.faturaNo : '') + (r.faturaTarihi ? ' (' + r.faturaTarihi + ')' : '') : ' · Fatura kesilmedi'}`,
     s(seferFaturaToplam(r)), r.kdvOrani || 0, s(seferKdv(r)), s(seferGelir(r)), alacakDurum(r).etiket,
     sayi(r.bitisKm) && sayi(r.baslangicKm) ? sayi(r.bitisKm) - sayi(r.baslangicKm) : '', '', r.ekleyen || '', r.dosyaUrl || '']]));
   V.yakit.filter(r => filtre(r.tarih)).forEach(r => kayitlar.push([r.tarih, ['Gider', r.tarih, r.tur === 'AdBlue' ? 'AdBlue' : 'Yakıt', r.istasyon || '',
@@ -1194,8 +1193,17 @@ const EYLEM = {
   },
   faturaKesildi: el => {
     const s = V.seferler.find(x => x.id === el.dataset.id); if (!s) return;
-    kayitKaydet('seferler', { ...s, faturaKesildi: true, guncelleme: new Date().toISOString(), guncelleyen: ayar.ad });
-    toast('🧾 Fatura kesildi. Vade ve fatura fotoğrafı için sefere dokun.', 'basari');
+    const yeni = { ...s, guncelleme: new Date().toISOString(), guncelleyen: ayar.ad };
+    if (evet(s.faturaKesildi)) {
+      if (!confirm(`${s.yukleme} → ${s.bosaltma} seferinin faturası "kesilmedi" olarak geri alınsın mı?`)) return;
+      yeni.faturaKesildi = false; yeni.faturaTarihi = '';
+      kayitKaydet('seferler', yeni);
+      toast('Fatura kesilmedi olarak geri alındı');
+    } else {
+      yeni.faturaKesildi = true; yeni.faturaTarihi = bugun();
+      kayitKaydet('seferler', yeni);
+      toast('🧾 Fatura kesildi. Vade ve fatura fotoğrafı için sefere dokun.', 'basari');
+    }
     ciz();
   },
   alacaklar: () => { UI.seferFiltre = 'acik'; sayfaGit('seferler'); },
