@@ -12,12 +12,17 @@ Kurulum 3 bölümden oluşuyor, toplam 15-20 dakika sürer. Hepsi **ücretsiz**.
 **Her şey Drive'daki HexaFleet klasöründe toplanır:**
 ```
 HexaFleet/
-├── HexaFleet (e-tablo: tüm kayıtlar)
-├── 2026/
-│   ├── 11-Kasım/   (o ayın faturaları, fişleri, PDF'leri)
-│   └── 12-Aralık/
-└── 2027/ ...
+├── HexaFleet                     ← ana kayıt tablosu (uygulama buradan çalışır, elle düzenlemeyin)
+├── 2026-01 Ocak/
+│   ├── 2026-01 Ocak - Rapor      ← o ayın raporu: Seferler / Giderler / Özet
+│   ├── Faturalar/                ← "Ege Lojistik - 05.01.2026.pdf"
+│   └── Masraf Fişleri/           ← "Yakıt - Shell - 03.01.2026.jpg", "Lastik - 2 ön lastik - 04.01.2026.jpg"
+└── 2026-02 Şubat/ ...
 ```
+- Ay klasörü o ay ilk kayıt girildiğinde kendiliğinden açılır. İş yapılmayan ay için klasör açılmaz.
+- **Rapor** her kayıt eklendiğinde, değiştiğinde ya da silindiğinde kendiliğinden güncellenir. Seferler sayfasında ödemesi alınan seferler **yeşil**, alınmayanlar **kırmızı** görünür.
+- Faturanın adı **müşteri firma + fatura tarihi** olur. Fatura tarihi girilmemişse sefer tarihi kullanılır. Sefer tarihi ya da müşteri değişirse dosya kendiliğinden doğru aya taşınır ve yeniden adlandırılır.
+- Kayıt silinince belgesi Drive'da **çöp kutusuna** gider (30 gün içinde geri alınabilir).
 
 ---
 
@@ -67,6 +72,13 @@ HexaFleet/
 ### Kodu sonradan güncellersen
 **Dağıt → Dağıtımları yönet → ✏️ (düzenle) → Sürüm: Yeni sürüm → Dağıt**.
 Böyle yaparsan link **değişmez**. "Yeni dağıtım" dersen link değişir ve telefonlardan tekrar girmen gerekir.
+
+Kodu güncelledikten sonra üstteki fonksiyon kutusundan **`herSeyiDuzenle`**'yi seçip bir kez **▶ Çalıştır**. Bu fonksiyon:
+- eski belgeleri ay klasörlerine taşır ve adlarını düzeltir,
+- her ayın raporunu baştan oluşturur,
+- eski düzenden kalan boş klasörleri çöpe atar.
+
+Yeni izin isterse (ör. "e-tablolarınızı oluşturma") **İzin ver** de.
 
 ---
 
