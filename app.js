@@ -299,7 +299,10 @@ function ayOzet(ay) {
     litre: topla(y.filter(motorinMi), x => sayi(x.litre)),
     yakitTutar: topla(y, x => sayi(x.tutar)),
     kdvHesaplanan: topla(s, seferKdv),
-    kdvIndirilecek: topla(y, giderKdv) + topla(m, giderKdv)
+    kdvIndirilecek: topla(y, giderKdv) + topla(m, giderKdv),
+    gelirDahil: topla(s, seferFaturaToplam),
+    giderDahil: topla(y, x => sayi(x.tutar)) + topla(m, x => sayi(x.tutar)),
+    get netDahil() { return this.gelirDahil - this.giderDahil; }
   };
 }
 
@@ -864,11 +867,13 @@ function ozetCiz() {
 
   return `${ayNav()}
     <section class="kart vurgu">
-      <div class="etiket">Net kâr · KDV hariç</div>
-      <div class="buyuk">${para(o.net)}</div>
+      <div class="kar-ikili">
+        <div><div class="etiket">Net kâr · KDV hariç</div><div class="buyuk">${para(o.net)}</div></div>
+        <div class="kar-dahil"><div class="etiket">KDV dahil</div><b>${para(o.netDahil)}</b></div>
+      </div>
       <div class="ikili">
-        <div><span class="etiket">Gelir</span><b>${para(o.gelir)}</b></div>
-        <div><span class="etiket">Gider</span><b>${para(o.gider)}</b></div>
+        <div><span class="etiket">Gelir</span><b>${para(o.gelir)}</b><small>KDV dahil ${para(o.gelirDahil)}</small></div>
+        <div><span class="etiket">Gider</span><b>${para(o.gider)}</b><small>KDV dahil ${para(o.giderDahil)}</small></div>
       </div>
     </section>
     <div class="istat-grid">
@@ -1220,7 +1225,8 @@ const EYLEM = {
   sil: () => {
     if (!F || !F.eski) return;
     const ad = FORMLAR[F.kol].baslik.toLocaleLowerCase('tr');
-    if (!confirm(`Bu ${ad} kaydı herkes için silinecek. Emin misin?`)) return;
+    const belgeNotu = F.eski.dosyaUrl ? '\nEkli belge de Drive\'da çöp kutusuna taşınacak.' : '';
+    if (!confirm(`Bu ${ad} kaydı herkes için silinecek.${belgeNotu}\n\nEmin misin?`)) return;
     kayitSil(F.kol, F.eski.id);
     modalKapat(); toast('Silindi'); ciz();
   },

@@ -424,3 +424,10 @@ h1, h2, h3, .buyuk, .ay-nav .ay-ad, .istat b, .kutu b, .satir-ust b { font-famil
 .durum-btn.tamam { border-style: solid; border-color: rgba(52, 211, 153, .45); background: var(--yesil-acik); }
 .durum-btn.tamam b { color: var(--yesil); }
 .durum-btn:active { transform: scale(.98); }
+
+/* Özet kartı: KDV hariç + dahil */
+.kar-ikili { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; margin-bottom: 12px; }
+.kar-ikili .buyuk { margin-bottom: 0; }
+.kar-dahil { text-align: right; padding-bottom: 4px; }
+.kar-dahil b { display: block; font-family: var(--baslik-font); font-size: 19px; color: #a5f3fc; white-space: nowrap; }
+.ikili small { font-size: 12px; color: rgba(255, 255, 255, .6); margin-top: 1px; }

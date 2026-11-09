@@ -6,7 +6,18 @@ Kurulum 3 bölümden oluşuyor, toplam 15-20 dakika sürer. Hepsi **ücretsiz**.
 2. **GitHub tarafı:** uygulamanın internette yayınlanması
 3. **Telefonlar:** sen, baban ve kardeşin
 
-> Google tarafını **tek bir kişi** (örneğin sen) kendi hesabında kurar, sonra diğerleriyle paylaşır.
+> Google tarafını **tek bir kişi** kendi hesabında kurar, sonra diğerleriyle paylaşır.
+> ⚠️ Kurulumu Drive'ında **HexaFleet** klasörü olan Google hesabıyla yap. Kod bu klasörü kullanacak şekilde ayarlı.
+
+**Her şey Drive'daki HexaFleet klasöründe toplanır:**
+```
+HexaFleet/
+├── HexaFleet (e-tablo: tüm kayıtlar)
+├── 2026/
+│   ├── 11-Kasım/   (o ayın faturaları, fişleri, PDF'leri)
+│   └── 12-Aralık/
+└── 2027/ ...
+```
 
 ---
 
@@ -36,7 +47,7 @@ Kurulum 3 bölümden oluşuyor, toplam 15-20 dakika sürer. Hepsi **ücretsiz**.
 3. "Yetkilendirme gerekli" penceresi çıkar → **İzinleri incele** → hesabını seç.
 4. "Google bu uygulamayı doğrulamadı" uyarısı çıkarsa: **Gelişmiş → projenin adına git (güvenli değil)** → **İzin ver**.
    (Bu uyarı normal, kodu sen yazdığın için Google doğrulamadı. Kod sadece kendi e-tablona ve Drive'ına erişir.)
-5. Alttaki günlükte *"Belgeler klasörü: https://drive.google.com/..."* yazısını görürsün. Drive'ında **HexaFleet - Belgeler** klasörü oluştu.
+5. Alttaki günlükte *"E-tablo ve belgeler bu klasörde: https://drive.google.com/..."* yazısını görürsün. E-tablo kendiliğinden **HexaFleet** klasörüne taşınır. Bundan sonra yüklenen bütün faturalar da bu klasörün altındaki yıl/ay klasörlerine gider.
 
 ### 1.5 Web uygulaması olarak yayınla
 1. Sağ üstten **Dağıt → Yeni dağıtım**.
@@ -49,10 +60,9 @@ Kurulum 3 bölümden oluşuyor, toplam 15-20 dakika sürer. Hepsi **ücretsiz**.
    `https://script.google.com/macros/s/AKfy..../exec` şeklinde olur. Bu linki bir yere not et.
 
 ### 1.6 Babanla ve kardeşinle paylaş (isteğe bağlı ama tavsiye edilir)
-- **E-tablo:** Sağ üstteki **Paylaş**'a bas, ikisinin Gmail adresini ekle. Rolleri **Görüntüleyen** olsun.
-  Kayıtları uygulamadan girecekler; e-tabloyu sadece görmeleri yeterli.
-- **Drive klasörü:** *HexaFleet - Belgeler* klasörüne sağ tıkla, **Paylaş** de ve ikisini **Görüntüleyen** olarak ekle.
-  Böylece uygulamadaki "📎 belgeyi aç" linkleri onlarda da açılır.
+- Drive'da **HexaFleet** klasörüne sağ tıkla → **Paylaş** → ikisinin Gmail adresini **Görüntüleyen** olarak ekle.
+- Bu tek paylaşım hem e-tabloyu hem de bütün faturaları kapsar. Uygulamadaki "📎" linkleri onlarda da açılır.
+- Kayıtları uygulamadan girecekleri için e-tabloda düzenleme yetkisine gerek yok.
 
 ### Kodu sonradan güncellersen
 **Dağıt → Dağıtımları yönet → ✏️ (düzenle) → Sürüm: Yeni sürüm → Dağıt**.
@@ -116,4 +126,5 @@ Değişen dosyayı GitHub'da aynı yere tekrar yükle. Telefonlar uygulamayı bi
 | "Sunucudan geçersiz yanıt" | Dağıtımda **Erişimi olanlar: Herkes** seçili mi? Link `/exec` ile mi bitiyor? |
 | "Sunucuda SIFRE tanımlı değil" | 1.3 adımını yap. |
 | Fotoğraflar yüklenmiyor | 1.4 adımında Drive izni verildi mi? `kurulum` fonksiyonunu tekrar çalıştır. |
+| "HexaFleet Drive klasörüne erişilemedi" | Apps Script'i HexaFleet klasörünün sahibi olan hesapla kurmadın. Doğru hesapla aç, ya da Proje Ayarları'na `KLASOR_ID` özelliği ekleyip kendi klasörünün kimliğini yaz (klasör linkinde `/folders/` sonrasındaki kısım). |
 | Kod değişikliği etkisiz | 1.5'in altındaki "Kodu sonradan güncellersen" adımını uygula. |

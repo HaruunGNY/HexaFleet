@@ -3,7 +3,9 @@
  *
  * Bu kod bir Google E-Tablo'ya (Sheets) bağlı çalışır:
  *  - Kayıtlar e-tablodaki sayfalarda tutulur (Seferler, Yakıt, Masraflar, Hatırlatmalar)
- *  - Fatura / fiş fotoğrafları Google Drive'da "HexaFleet - Belgeler / YIL / AY" klasörlerine kaydedilir
+ *  - Her şey Google Drive'daki "HexaFleet" klasöründe toplanır:
+ *      HexaFleet/                 → e-tablo (kurulumda buraya taşınır)
+ *      HexaFleet/2026/11-Kasım/   → o ayın fatura / fiş fotoğrafları ve PDF'leri
  *
  * Kurulum adımları için KURULUM.md dosyasına bakın.
  * Proje Ayarları > Komut dosyası özellikleri kısmına SIFRE adında bir özellik eklemeyi unutmayın.
@@ -17,13 +19,17 @@ const SAYFA_ADLARI = {
   hatirlatmalar: 'Hatırlatmalar'
 };
 const AYLAR = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
-const KOK_KLASOR_ADI = 'HexaFleet - Belgeler';
+// Drive'daki HexaFleet klasörünün kimliği (klasör linkindeki /folders/ sonrası kısım)
+const HEXAFLEET_KLASOR_ID = '1AndJIHiGhvX0QJwXsl0owEOUapBK7m5H';
 
-/** Kurulumda bir kez elle çalıştırın: sayfaları ve Drive klasörünü oluşturur, izinleri ister. */
+/** Kurulumda bir kez elle çalıştırın: sayfaları oluşturur, e-tabloyu HexaFleet klasörüne taşır, izinleri ister. */
 function kurulum() {
   KOLEKSIYONLAR.forEach(sayfa);
   const klasor = kokKlasor();
-  Logger.log('Belgeler klasörü: ' + klasor.getUrl());
+  const tablo = DriveApp.getFileById(SpreadsheetApp.getActiveSpreadsheet().getId());
+  const zatenOrada = tablo.getParents().hasNext() && tablo.getParents().next().getId() === klasor.getId();
+  if (!zatenOrada) tablo.moveTo(klasor);
+  Logger.log('E-tablo ve belgeler bu klasörde: ' + klasor.getUrl());
   if (!PropertiesService.getScriptProperties().getProperty('SIFRE')) {
     Logger.log('UYARI: Henüz SIFRE tanımlamadınız! Proje Ayarları > Komut dosyası özellikleri kısmından ekleyin.');
   } else {
@@ -150,8 +156,14 @@ function kaydet(kol, kayit) {
 
   let satir = satirBul(sh, kayit.id);
   // Var olan kayıtla birleştir (gönderilmeyen alanlar korunur)
-  const birlesik = satir > 0 ? satirOku(sh, satir, bas) : {};
+  const mevcut = satir > 0 ? satirOku(sh, satir, bas) : {};
+  const birlesik = Object.assign({}, mevcut);
   Object.keys(kayit).forEach(function (k) { birlesik[k] = kayit[k]; });
+
+  // Belge değiştirildi ya da kaldırıldıysa eski dosyayı Drive'da çöp kutusuna taşı
+  if (mevcut.dosyaUrl && Object.prototype.hasOwnProperty.call(kayit, 'dosyaUrl') && kayit.dosyaUrl !== mevcut.dosyaUrl) {
+    dosyaCopeAt(mevcut.dosyaUrl);
+  }
 
   const degerler = bas.map(function (k) {
     const v = birlesik[k];
@@ -170,7 +182,11 @@ function kaydet(kol, kayit) {
 function sil(kol, id) {
   const sh = sayfa(kol);
   const satir = satirBul(sh, id);
-  if (satir > 0) sh.deleteRow(satir);
+  if (satir < 0) return;
+  // Kayda bağlı fatura / fiş varsa Drive'da çöp kutusuna taşı (30 gün içinde geri alınabilir)
+  const eski = satirOku(sh, satir, basliklar(sh));
+  if (eski.dosyaUrl) dosyaCopeAt(eski.dosyaUrl);
+  sh.deleteRow(satir);
 }
 
 function hepsiniOku(kol) {
@@ -197,14 +213,13 @@ function hepsiniOku(kol) {
 // ---------------- Drive işlemleri ----------------
 
 function kokKlasor() {
-  const p = PropertiesService.getScriptProperties();
-  const id = p.getProperty('KLASOR_ID');
-  if (id) {
-    try { return DriveApp.getFolderById(id); } catch (e) { /* silinmiş olabilir, yeniden oluştur */ }
+  // İstenirse Proje Ayarları > Komut dosyası özellikleri'nde KLASOR_ID ile başka klasör seçilebilir
+  const id = PropertiesService.getScriptProperties().getProperty('KLASOR_ID') || HEXAFLEET_KLASOR_ID;
+  try {
+    return DriveApp.getFolderById(id);
+  } catch (e) {
+    throw new Error('HexaFleet Drive klasörüne erişilemedi. Apps Script projesini klasörün sahibi olan Google hesabıyla yayınladığınızdan emin olun.');
   }
-  const klasor = DriveApp.createFolder(KOK_KLASOR_ADI);
-  p.setProperty('KLASOR_ID', klasor.getId());
-  return klasor;
 }
 
 function altKlasor(ust, ad) {
@@ -219,6 +234,23 @@ function dosyaKaydet(dosya, tarih) {
   const klasor = altKlasor(altKlasor(kokKlasor(), yil), ay + '-' + AYLAR[Number(ay) - 1]);
   const blob = Utilities.newBlob(Utilities.base64Decode(dosya.base64), dosya.mime || 'application/octet-stream', dosya.ad || ('belge_' + Date.now()));
   return klasor.createFile(blob).getUrl();
+}
+
+/** Drive linkinden dosya kimliğini çıkarır: .../file/d/KIMLIK/view veya ...?id=KIMLIK */
+function dosyaIdBul(url) {
+  const m = String(url || '').match(/\/d\/([-\w]{20,})/) || String(url || '').match(/[?&]id=([-\w]{20,})/);
+  return m ? m[1] : null;
+}
+
+/** Dosyayı kalıcı silmez, Drive çöp kutusuna taşır */
+function dosyaCopeAt(url) {
+  const id = dosyaIdBul(url);
+  if (!id) return;
+  try {
+    DriveApp.getFileById(id).setTrashed(true);
+  } catch (e) {
+    // dosya zaten silinmiş ya da erişim yok: kaydın silinmesine engel olmasın
+  }
 }
 
 function json(o) {
