@@ -92,7 +92,7 @@ Değişen dosyayı GitHub'da aynı yere tekrar yükle. Telefonlar uygulamayı bi
    - **iPhone (Safari):** alttaki Paylaş ⬆️ simgesi → **Ana Ekrana Ekle**
 
 ### Baban ve kardeşin
-1. Uygulamada **Daha → Ayarlar → "Babama / kardeşime kurulum linki gönder"**'e bas, WhatsApp'tan gönder.
+1. Uygulamada **Daha → Ayarlar → "Kurulum linkini paylaş"**'e bas, WhatsApp'tan gönder.
    (Bu link Apps Script adresini içerir, onların uzun linki yazması gerekmez. Şifre linkte **yok**, şifreyi ayrıca söyle.)
 2. Linki açınca sadece **adlarını** ve **şifreyi** yazıp **Başla**'ya basarlar.
 3. Onlar da ana ekrana eklesin.

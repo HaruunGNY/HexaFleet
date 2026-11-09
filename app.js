@@ -1059,7 +1059,7 @@ function ayarlarCiz() {
           <button type="button" class="btn ana" data-act="ayarKaydet">Kaydet</button>
         </div>
         ${ayar.url ? `<button type="button" class="btn ikincil tam" data-act="senkronSimdi">🔄 Şimdi senkronize et</button>
-        <button type="button" class="btn ikincil tam" data-act="paylas">📤 Babama / kardeşime kurulum linki gönder</button>` : ''}
+        <button type="button" class="btn ikincil tam" data-act="paylas">📤 Kurulum linkini paylaş</button>` : ''}
       </div>
       <p class="kucuk" style="margin:12px 0 0">Bekleyen işlem: <b>${kuyruk.length}</b>${kuyruk.some(o => o.dosya) ? ` (${kuyruk.filter(o => o.dosya).length} belge)` : ''}</p>
     </section>
@@ -1081,7 +1081,7 @@ function kurulumCiz() {
     <h1><span>HexaFleet</span></h1>
     <p>Sefer, yakıt, masraf ve belgeler tek yerde.</p>
     <div class="kart">
-      <div class="alan"><label for="kAd">Adın</label><input id="kAd" type="text" placeholder="Örn. Harun, Baba, Kardeş" autocomplete="given-name"></div>
+      <div class="alan"><label for="kAd">Adın</label><input id="kAd" type="text" placeholder="Adınızı yazın" autocomplete="given-name"><div class="ipucu">Eklediğin kayıtlarda "ekleyen" olarak görünür</div></div>
       <div class="alan"><label for="kUrl">Apps Script linki</label><input id="kUrl" type="url" value="${esc(kurUrl ? decodeURIComponent(kurUrl) : '')}" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off"></div>
       <div class="alan"><label for="kSifre">Ortak şifre</label><input id="kSifre" type="password" autocomplete="off"></div>
       <button type="button" class="btn ana tam" data-act="kurulumBitir">Başla</button>
